@@ -23,6 +23,10 @@ public sealed class MarkitdownRunner(
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
+        // Force Python's stdout/stderr to UTF-8 so non-ASCII (CJK) content survives the pipe
+        // on platforms whose default system codepage is not UTF-8 (e.g. Windows CP950/CP936).
+        psi.Environment["PYTHONIOENCODING"] = "utf-8";
+        psi.Environment["PYTHONUTF8"] = "1";
         foreach (var a in new[] { "-m", "markitdown", absolutePath }) psi.ArgumentList.Add(a);
         foreach (var a in cfg.Markitdown.ExtraArgs) psi.ArgumentList.Add(a);
 
