@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Persistence\SqlScripts\*.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Elastic.Clients.Elasticsearch" Version="9.4.1" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.27" />
