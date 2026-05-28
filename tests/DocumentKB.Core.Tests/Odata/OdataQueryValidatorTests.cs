@@ -1,6 +1,6 @@
 using DocumentKB.Core.Configuration;
 using DocumentKB.Core.Odata;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace DocumentKB.Core.Tests.Odata;

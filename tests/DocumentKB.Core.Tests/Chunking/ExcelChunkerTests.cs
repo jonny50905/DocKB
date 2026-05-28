@@ -1,7 +1,7 @@
 using DocumentKB.Core.Chunking;
 using DocumentKB.Core.Configuration;
 using DocumentKB.Core.Entities;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace DocumentKB.Core.Tests.Chunking;

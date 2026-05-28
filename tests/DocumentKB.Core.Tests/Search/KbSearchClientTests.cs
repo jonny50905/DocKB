@@ -1,7 +1,7 @@
 using DocumentKB.Core.Configuration;
 using DocumentKB.Core.Search;
 using Elastic.Clients.Elasticsearch;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Options;
 using Testcontainers.Elasticsearch;
 

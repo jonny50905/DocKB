@@ -1,6 +1,6 @@
 using DocumentKB.Core.Entities;
 using DocumentKB.Core.Ingestion;
-using FluentAssertions;
+using AwesomeAssertions;
 using Xunit;
 
 namespace DocumentKB.Core.Tests.Ingestion;

@@ -6,7 +6,7 @@ using DocumentKB.Core.Markitdown;
 using DocumentKB.Core.Persistence;
 using DocumentKB.Core.Search;
 using Elastic.Clients.Elasticsearch;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;

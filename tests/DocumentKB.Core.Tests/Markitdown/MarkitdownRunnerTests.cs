@@ -1,6 +1,6 @@
 using DocumentKB.Core.Configuration;
 using DocumentKB.Core.Markitdown;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
