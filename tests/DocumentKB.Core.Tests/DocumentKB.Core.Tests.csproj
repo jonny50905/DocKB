@@ -28,4 +28,11 @@
     <ProjectReference Include="..\..\src\DocumentKB.Core\DocumentKB.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\fixtures\scripts\*.ps1">
+      <Link>fixtures\scripts\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
