@@ -57,9 +57,12 @@ public sealed class IngestionPipeline(
         }
 
         // Soft delete files no longer on disk
+        var prefixWithSep = pathPrefix is null ? null : pathPrefix.TrimEnd('/') + "/";
         var activeRows = await db.Files
             .Where(x => x.Status == FileStatus.Active
-                && (pathPrefix == null || x.RelativePath.StartsWith(pathPrefix)))
+                && (pathPrefix == null
+                    || x.RelativePath == pathPrefix
+                    || x.RelativePath.StartsWith(prefixWithSep!)))
             .Select(x => new { x.Id, x.RelativePath })
             .ToListAsync(ct);
         foreach (var row in activeRows)
