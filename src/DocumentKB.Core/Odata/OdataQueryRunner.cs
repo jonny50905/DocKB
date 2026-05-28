@@ -31,12 +31,28 @@ public sealed class OdataQueryRunner(OdataOptions options)
             new Microsoft.OData.UriParser.EntitySetSegment(entitySet));
         var ctx = new ODataQueryContext(model, typeof(T), path);
 
+        // Without $select/$expand, ApplyTo returns the raw CLR entity, which System.Text.Json
+        // would serialize in full — INCLUDING large columns the EDM model deliberately Ignores
+        // (FileEntity.MarkdownFull, ChunkEntity.ContentMd). EDM Ignore only constrains OData
+        // projection, not CLR serialization. To honour the "large fields never leave via OData"
+        // contract (design §5.4), inject a default $select of every EDM-exposed structural
+        // property so the result always flows through projection wrappers (which omit ignored
+        // fields). $expand alone also yields a wrapper, so only inject when neither is present.
+        var effectiveOData = odata;
+        var hasSelect = odata.Contains("$select", StringComparison.OrdinalIgnoreCase);
+        var hasExpand = odata.Contains("$expand", StringComparison.OrdinalIgnoreCase);
+        if (!hasSelect && !hasExpand)
+        {
+            var exposed = string.Join(",", entitySet.EntityType.StructuralProperties().Select(p => p.Name));
+            effectiveOData = string.IsNullOrEmpty(odata) ? $"$select={exposed}" : $"{odata}&$select={exposed}";
+        }
+
         var http = new DefaultHttpContext();
         http.Request.Method = "GET";
         http.Request.Scheme = "http";
         http.Request.Host = new HostString("localhost");
         http.Request.Path = $"/{entitySetName}";
-        http.Request.QueryString = new QueryString("?" + odata);
+        http.Request.QueryString = new QueryString("?" + effectiveOData);
 
         var opts = new ODataQueryOptions<T>(ctx, http.Request);
 

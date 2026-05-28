@@ -31,4 +31,23 @@ public class OdataQueryValidatorTests
 
     [Fact] public void ExpandDepthOverOne_Rejected()
         => _v.Validate("$expand=File($expand=Chunks)").Should().Contain("$expand");
+
+    [Fact] public void ExpandWithNestedOptions_Passes()
+        // Regression: $expand=Nav(...) must NOT be mistaken for a function call. The nested
+        // option parens (File(...)) previously tripped the function whitelist ("function File
+        // is not allowed").
+        => _v.Validate("$filter=FileId eq 3&$expand=File($select=FileName,RelativePath)&$top=2")
+            .Should().BeNull();
+
+    [Fact] public void DisallowedFunctionInFilter_StillRejected()
+        => _v.Validate("$filter=substringof('x',FileName)")
+            .Should().Contain("substringof");
+
+    [Fact] public void AllowedFunctionInOrderBy_Passes()
+        => _v.Validate("$orderby=tolower(FileName) asc").Should().BeNull();
+
+    [Fact] public void EnumLiteralInFilter_Passes()
+        // Enum literal has no parens, so it must not trip the function scanner.
+        => _v.Validate("$filter=FileType eq DocumentKB.Core.Entities.FileType'Word'&$select=Id")
+            .Should().BeNull();
 }

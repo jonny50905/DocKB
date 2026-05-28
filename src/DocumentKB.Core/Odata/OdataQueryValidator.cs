@@ -33,14 +33,34 @@ public sealed class OdataQueryValidator(OdataOptions options)
         var em = ExpandRx.Match(odata);
         if (em.Success && em.Groups[1].Value.Contains("$expand", StringComparison.OrdinalIgnoreCase))
             return "$expand depth > 1 is banned";
-        foreach (Match fm in FnCallRx.Matches(odata))
+
+        // The function whitelist applies ONLY to clauses where OData functions can legitimately
+        // appear: $filter and $orderby. Scanning the whole query string would false-positive on
+        // $expand=NavProp(...) — the navigation-property-with-options syntax looks like a function
+        // call to the regex (e.g. "File(" in $expand=File($select=FileName)).
+        foreach (var clause in ClauseValues(odata, "$filter", "$orderby"))
         {
-            var fn = fm.Groups[1].Value;
-            if (IsKnownClauseOrOperator(fn)) continue;
-            if (!AllowedFns.Contains(fn))
-                return $"function {fn} is not allowed";
+            foreach (Match fm in FnCallRx.Matches(clause))
+            {
+                var fn = fm.Groups[1].Value;
+                if (IsKnownClauseOrOperator(fn)) continue;
+                if (!AllowedFns.Contains(fn))
+                    return $"function {fn} is not allowed";
+            }
         }
         return null;
+    }
+
+    private static IEnumerable<string> ClauseValues(string odata, params string[] keys)
+    {
+        foreach (var seg in odata.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var eq = seg.IndexOf('=');
+            if (eq <= 0) continue;
+            var key = seg[..eq].Trim();
+            if (keys.Contains(key, StringComparer.OrdinalIgnoreCase))
+                yield return seg[(eq + 1)..];
+        }
     }
 
     private static bool IsKnownClauseOrOperator(string token)

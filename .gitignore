@@ -490,3 +490,6 @@ documentkb-decrypt/
 
 # Logs
 logs/
+
+# Sample/source documents (local only — may be confidential, large)
+SampleFile/

@@ -31,7 +31,8 @@ public class OdataQueryRunnerTests
 
         items.Should().HaveCount(2);
         count.Should().BeNull();
-        items.Should().AllBeOfType<FileEntity>();
+        // every result is a projection dictionary (default $select injected to drop large fields)
+        items.Should().AllBeAssignableTo<IDictionary<string, object>>();
     }
 
     [Fact]
@@ -44,7 +45,7 @@ public class OdataQueryRunnerTests
             "$filter=FileType eq DocumentKB.Core.Entities.FileType'Excel'");
 
         items.Should().HaveCount(2);
-        items.Should().AllBeOfType<FileEntity>();
+        items.Should().AllBeAssignableTo<IDictionary<string, object>>();
     }
 
     [Fact]
@@ -89,7 +90,54 @@ public class OdataQueryRunnerTests
             "$orderby=MtimeUtc desc&$top=1");
 
         items.Should().HaveCount(1);
-        items[0].Should().BeOfType<FileEntity>()
-            .Which.Id.Should().Be(3); // newest MtimeUtc
+        var top = items[0].Should().BeAssignableTo<IDictionary<string, object>>().Subject;
+        top["Id"].Should().Be(3L); // newest MtimeUtc
+    }
+
+    [Fact]
+    public void NoSelect_DoesNotLeakIgnoredLargeFields()
+    {
+        // Regression: without $select the runner used to return the raw CLR FileEntity, whose
+        // MarkdownFull column was then serialized in full (megabytes). The EDM model Ignores
+        // MarkdownFull, so a default projection must drop it. Verify no ignored field leaks.
+        var files = new[]
+        {
+            new FileEntity
+            {
+                Id = 1, FileName = "big.docx", RelativePath = "big.docx",
+                FileType = FileType.Word, Status = FileStatus.Active,
+                MarkdownFull = new string('X', 5_000_000), // 5 MB — must NOT appear in output
+            },
+        }.AsQueryable();
+
+        var (items, _) = Runner().Apply(files, EdmBuilder.Build(), "Files", "");
+
+        items.Should().HaveCount(1);
+        var row = items[0].Should().BeAssignableTo<IDictionary<string, object>>().Subject;
+        row.Should().ContainKey("Id");
+        row.Should().ContainKey("FileName");
+        row.Should().NotContainKey("MarkdownFull");
+        row.Should().NotContainKey("Chunks");
+    }
+
+    [Fact]
+    public void Chunks_NoSelect_DoesNotLeakContentMd()
+    {
+        var chunks = new[]
+        {
+            new ChunkEntity
+            {
+                Id = 1, FileId = 1, Ordinal = 0, ChunkType = ChunkType.WordSection,
+                TitlePath = "Intro", ContentMd = new string('Y', 2_000_000), CharLen = 2_000_000,
+            },
+        }.AsQueryable();
+
+        var (items, _) = Runner().Apply(chunks, EdmBuilder.Build(), "Chunks", "$orderby=Ordinal asc");
+
+        items.Should().HaveCount(1);
+        var row = items[0].Should().BeAssignableTo<IDictionary<string, object>>().Subject;
+        row.Should().ContainKey("Id");
+        row.Should().ContainKey("TitlePath");
+        row.Should().NotContainKey("ContentMd");
     }
 }
