@@ -54,4 +54,7 @@ using var host = builder.Build();
 var root = new RootCommand("DocumentKB ingestion CLI");
 root.AddCommand(ReindexCommand.Build(host.Services));
 root.AddCommand(DoctorCommand.Build(host.Services));
+root.AddCommand(StatusCommand.Build(host.Services));
+root.AddCommand(TestDecryptCommand.Build(host.Services));
+root.AddCommand(ExportMarkdownCommand.Build(host.Services));
 return await root.InvokeAsync(args);
