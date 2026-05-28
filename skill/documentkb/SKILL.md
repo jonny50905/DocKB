@@ -14,7 +14,7 @@ description: Use when answering any question that might be covered by the local 
 |---|---|
 | 「2024 訂單金額最大的客戶是誰?」這類**內容問題** | kb_search → kb_fetch_chunk |
 | 「KB 裡有沒有 XXX 相關的檔案?」 | kb_query_documents(`$filter=contains(FileName, 'XXX')`) |
-| 「最近修改過哪些 Word?」 | kb_query_documents(`$filter=FileType eq 'word'&$orderby=MtimeUtc desc&$top=10`) |
+| 「最近修改過哪些 Word?」 | kb_query_documents(`$filter=endswith(FileName,'.docx')&$orderby=MtimeUtc desc&$top=10`) |
 | 「這份檔案有幾個 chunk?分別是什麼章節?」 | kb_query_chunks(`$filter=FileId eq 77&$select=Ordinal,TitlePath,ChunkType`) |
 | 拿原文 | 只能用 kb_fetch_chunk |
 
@@ -94,8 +94,12 @@ description: Use when answering any question that might be covered by the local 
 
 ## OData 寫法守則
 
-- 字串值用單引號:`'excel'`、`'訂單'`
-- 日期值用 ISO 8601:`2026-05-21T00:00:00Z`
+- 字串值用單引號:`contains(FileName, '訂單')`、`endswith(FileName, '.xlsx')`
+- 日期值用 ISO 8601:`MtimeUtc gt 2026-05-21T00:00:00Z`
+- **`FileType` / `Status` 是 enum,不是字串** — 不能寫 `FileType eq 'word'`(會回 INVALID_INPUT/ODataException)。改用其中一種:
+  - 用副檔名篩:Word → `endswith(FileName,'.docx')`,Excel → `endswith(FileName,'.xlsx')`(最直覺,推薦)
+  - 或用 enum 字面值:`FileType eq DocumentKB.Core.Entities.FileType'Word'`(成員名 `Word`/`Excel` 大小寫須正確);Status 同理 `Status eq DocumentKB.Core.Entities.FileStatus'Active'`
+- 投影/排序欄位用實體屬性名(PascalCase):`Id`、`FileName`、`RelativePath`、`MtimeUtc`、`Ordinal`、`TitlePath`、`ChunkType`
 - 不知道欄位 → 對 Files / Chunks 各跑 `$top=1` 看回傳結構
 - 寫錯被擋(INVALID_INPUT)→ 看 server 回的規則訊息修正,**不要硬猜**
 

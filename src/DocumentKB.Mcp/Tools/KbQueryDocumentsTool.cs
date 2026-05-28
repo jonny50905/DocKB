@@ -16,9 +16,8 @@ public sealed class KbQueryDocumentsTool(KbDbContext db, IOptions<KbOptions> opt
 
     [McpServerTool, Description("OData query over Files. " +
         "Example: $filter=FileType eq 'excel'&$orderby=MtimeUtc desc&$top=10&$count=true")]
-    public async Task<object> kb_query_documents(
-        [Description("OData query string (after the '?'), e.g. $filter=...&$top=10")] string odata,
-        CancellationToken ct = default)
+    public object kb_query_documents(
+        [Description("OData query string (after the '?'), e.g. $filter=...&$top=10")] string odata)
     {
         var validator = new OdataQueryValidator(opts.Value.Odata);
         var err = validator.Validate(odata);
@@ -28,10 +27,9 @@ public sealed class KbQueryDocumentsTool(KbDbContext db, IOptions<KbOptions> opt
         try
         {
             var runner = new OdataQueryRunner(opts.Value.Odata);
-            var (q, count) = runner.Apply(
+            var (items, count) = runner.Apply(
                 db.Files.AsNoTracking().Where(f => f.Status == FileStatus.Active),
                 Model, "Files", odata);
-            var items = await ((IQueryable<FileEntity>)q).ToListAsync(ct);
             return count is null
                 ? (object)new { value = items }
                 : new Dictionary<string, object?>

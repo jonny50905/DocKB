@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using DocumentKB.Core.Configuration;
-using DocumentKB.Core.Entities;
 using DocumentKB.Core.Odata;
 using DocumentKB.Core.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,7 @@ public sealed class KbQueryChunksTool(KbDbContext db, IOptions<KbOptions> opts)
 
     [McpServerTool, Description("OData query over Chunks (metadata only; ContentMd hidden). " +
         "Use $expand=File for file details. Use kb_fetch_chunk for full text.")]
-    public async Task<object> kb_query_chunks(string odata, CancellationToken ct = default)
+    public object kb_query_chunks(string odata)
     {
         var validator = new OdataQueryValidator(opts.Value.Odata);
         var err = validator.Validate(odata);
@@ -25,10 +24,9 @@ public sealed class KbQueryChunksTool(KbDbContext db, IOptions<KbOptions> opts)
         try
         {
             var runner = new OdataQueryRunner(opts.Value.Odata);
-            var (q, count) = runner.Apply(
+            var (items, count) = runner.Apply(
                 db.Chunks.AsNoTracking().Include(c => c.File),
                 Model, "Chunks", odata);
-            var items = await ((IQueryable<ChunkEntity>)q).ToListAsync(ct);
             return count is null
                 ? (object)new { value = items }
                 : new Dictionary<string, object?>
