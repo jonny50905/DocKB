@@ -780,7 +780,7 @@ DocumentKB.sln
 **前置**(一次性):
 1. 裝 Python 3.10+,`pip install markitdown[all]`
 2. 裝 MariaDB 10.6+,建 db `documentkb` + user
-3. 裝 ElasticSearch 8.x(本機 service 或 single-node Docker)
+3. 裝 ElasticSearch 9.x(本機 service 或 single-node Docker;`Elastic.Clients.Elasticsearch 9.x` 強制 server-side 9.x)
 4. 裝 .NET 8 runtime
 5. 裝 PowerShell 7+(`pwsh`) 或確認 Windows PowerShell 5.1 可用;依 AIP / RMS 環境準備解密腳本(以 `deploy/scripts/Aip-Decrypt.ps1.sample` 為基底)
 

@@ -1860,7 +1860,7 @@ namespace DocumentKB.Core.Tests.Search;
 public class KbSearchClientTests : IAsyncLifetime
 {
     private readonly ElasticsearchContainer _es =
-        new ElasticsearchBuilder().WithImage("docker.elastic.co/elasticsearch/elasticsearch:8.13.0").Build();
+        new ElasticsearchBuilder("docker.elastic.co/elasticsearch/elasticsearch:9.0.1").Build();
     private ElasticsearchClient _client = null!;
     private KbOptions _opts = null!;
 
@@ -2418,7 +2418,7 @@ public class IngestionPipelineEndToEndTests : IAsyncLifetime
     private readonly MariaDbContainer _db = new MariaDbBuilder()
         .WithImage("mariadb:11").Build();
     private readonly ElasticsearchContainer _es =
-        new ElasticsearchBuilder().WithImage("docker.elastic.co/elasticsearch/elasticsearch:8.13.0").Build();
+        new ElasticsearchBuilder("docker.elastic.co/elasticsearch/elasticsearch:9.0.1").Build();
     private string _sampleDir = null!;
 
     public async Task InitializeAsync()
@@ -3538,7 +3538,7 @@ Local Word/Excel knowledge base. See:
 
 ## Quick start
 
-1. Prereqs: .NET 8, MariaDB 10.6+, ElasticSearch 8.x, Python 3.10+ (`pip install markitdown[all]`), PowerShell 7+ (`pwsh`)
+1. Prereqs: .NET 8, MariaDB 10.6+, ElasticSearch 9.x, Python 3.10+ (`pip install markitdown[all]`), PowerShell 7+ (`pwsh`)
 2. `dotnet build`
 3. Copy `deploy/appsettings.sample.json` to `src/DocumentKB.Ingestion/appsettings.json` (and `src/DocumentKB.Mcp/appsettings.json`), fill in real values, set `Decryption.ScriptPath` to your AIP decrypt script (use `deploy/scripts/Aip-Decrypt.ps1.sample` as starting point)
 4. `dotnet run --project src/DocumentKB.Ingestion -- doctor`
