@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "documentkb": {
+      "command": "C:\\Tools\\DocumentKB\\Mcp\\DocumentKB.Mcp.exe",
+      "args": [],
+      "env": {
+        "DOCUMENTKB_APPSETTINGS": "C:\\Tools\\DocumentKB\\Mcp\\appsettings.json"
+      }
+    }
+  }
+}

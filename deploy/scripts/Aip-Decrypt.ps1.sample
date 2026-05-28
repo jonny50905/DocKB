@@ -1,0 +1,24 @@
+<#
+.SYNOPSIS
+  Sample AIP/RMS decryption script.
+  Required interface:
+    - accept -InputPath and -OutputPath parameters
+    - write decrypted file (or copy through if not encrypted) to -OutputPath
+    - exit 0 on success, nonzero on failure (stderr = error message)
+#>
+param(
+    [Parameter(Mandatory=$true)][string]$InputPath,
+    [Parameter(Mandatory=$true)][string]$OutputPath
+)
+
+# TODO: replace this body with your AIP/RMS unprotect call, e.g.:
+#   Unprotect-RMSFile -File $InputPath -OutputFolder (Split-Path $OutputPath -Parent) -OutputName (Split-Path $OutputPath -Leaf)
+
+# Fallback for sample: pass through unchanged so the pipeline still works for non-AIP files.
+try {
+    Copy-Item -LiteralPath $InputPath -Destination $OutputPath -Force
+    exit 0
+} catch {
+    [Console]::Error.WriteLine($_.Exception.Message)
+    exit 1
+}
